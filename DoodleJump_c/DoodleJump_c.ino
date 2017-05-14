@@ -51,127 +51,6 @@ void setup()
    doodleInit();
 }
 
-void loop(){
-  // keep the device running one of the demos
-  char bDemoState = 0;
-  bDemoState = CheckSwitches();
-  switch(bDemoState) {
-  case DEMO_0:
-    OrbitDemo0();
-    break;
-  case DEMO_1:
-    OrbitDemo1();
-    break;
-  case DEMO_2:
-    OrbitDemo2();
-    break;
-  case DEMO_3:
-    OrbitDemo3();
-    break;
-  default:
-    OrbitDemo0();
-    break;
-  }  
-}
-
-void flash(int start){
-  // turn one of the four LEDs on
-  if (start == 1){
-    GPIOPinWrite(LED1Port, LED1, LED1);
-  }
-  else if (start == 2){
-    GPIOPinWrite(LED2Port, LED2, LED2);
-  }
-  else if (start == 3){ 
-    GPIOPinWrite(LED3Port, LED3, LED3);
-  }
-  else if (start == 4){
-    GPIOPinWrite(LED4Port, LED4, LED4);
-  }
-}
-
-void off (){
-  // turn off all LEDs
-  GPIOPinWrite(LED1Port, LED1, LOW);
-  GPIOPinWrite(LED2Port, LED2, LOW);
-  GPIOPinWrite(LED3Port, LED3, LOW);
-  GPIOPinWrite(LED4Port, LED4, LOW);
-}
-
-int getStart(){
-  // decide which LED to flash by checking the state of the two buttons
-  uint32_t	ulAIN0;
-  long 			lBtn1;
-  long 			lBtn2;
-  char			szAIN[6] = {0};
-  char			cMSB = 0x00;
-  char			cMIDB = 0x00;
-  char			cLSB = 0x00;
-  
-  ADCProcessorTrigger(ADC0_BASE, 0);
-  ADCSequenceDataGet(ADC0_BASE, 0, &ulAIN0);
-
-  cMSB = (0xF00 & ulAIN0) >> 8;
-  cMIDB = (0x0F0 & ulAIN0) >> 4;
-  cLSB = (0x00F & ulAIN0);
-
-  szAIN[0] = '0';
-  szAIN[1] = 'x';
-  szAIN[2] = (cMSB > 9) ? 'A' + (cMSB - 10) : '0' + cMSB;
-  szAIN[3] = (cMIDB > 9) ? 'A' + (cMIDB - 10) : '0' + cMIDB;
-  szAIN[4] = (cLSB > 9) ? 'A' + (cLSB - 10) : '0' + cLSB;
-  szAIN[5] = '\0';
-  
-  if ((int)szAIN[2] <= 52 && (int)szAIN[2] > 48){
-  return 1;}
-  if ((int)szAIN[2] <= 56 && (int)szAIN[2] > 52) {
-  return 2;}
-  if ((int)szAIN[2] <= 66 && (int)szAIN[2] > 56){
-  return 3;}
-  if ((int)szAIN[2] <= 70 && (int)szAIN[2] > 66){
-  return 4;}
-}
-
-bool I2CGenIsNotIdle() {
-  return !I2CMasterBusBusy(I2C0_BASE);
-}
-
-int collisiondetection(int size, tile blocks[], int player_x,int player_y,int dx,int dy){ //dx, dy= falling speed, player_x,y = position of the player
-  for(int i=0; i<size; i++){
-    if(player_x+dx==blocks[i].x+blocks[i].w && ((player_y+16>=blocks[i].y && player_y+16<=blocks[i].y+blocks[i].h)
-      ||(player_y<=blocks[i].y+blocks[i].h && player_y>=blocks[i].y)||(player_y<=blocks[i].y && player_y+16>=blocks[i].y+blocks[i].h))){
-      return -1; //will collide
-    }
-  }
-  return 0; //will not collide 
-}
-
-void doodleInit(){
-  SCORE=0;
-  OrbitOledClear();
-  OrbitOledMoveTo(10,0);
-  OrbitOledSetCursor(0,0);
-  for ( int i = 0; i < NUM_TILES; i++ ){
-    tile block = {PlatformHeight, PlatformWidth, i*38, rand_interval(0,26)};
-    blocks[i] = block;
-  }
-}
-
-unsigned int rando() {
-  return rand_interval(0, 16);
-}
-
-unsigned int rand_interval(unsigned int min, unsigned int max){
-  int r;
-  const unsigned int range = 1 + max - min;
-  const unsigned int buckets = RAND_MAX / range;
-  const unsigned int limit = buckets * range;
-  do {
-    r = rand();
-  } while (r >= limit);
-  return min + (r / buckets);
-}
-  
 void DeviceInit()
 {
   /*
@@ -258,6 +137,40 @@ void DeviceInit()
   ClearLED = true;
 }
 
+void doodleInit(){
+  SCORE=0;
+  OrbitOledClear();
+  OrbitOledMoveTo(10,0);
+  OrbitOledSetCursor(0,0);
+  for ( int i = 0; i < NUM_TILES; i++ ){
+    tile block = {PlatformHeight, PlatformWidth, i*38, rand_interval(0,26)};
+    blocks[i] = block;
+  }
+}
+
+void loop(){
+  // keep the device running one of the demos
+  char bDemoState = 0;
+  bDemoState = CheckSwitches();
+  switch(bDemoState) {
+  case DEMO_0:
+    OrbitDemo0();
+    break;
+  case DEMO_1:
+    OrbitDemo1();
+    break;
+  case DEMO_2:
+    OrbitDemo2();
+    break;
+  case DEMO_3:
+    OrbitDemo3();
+    break;
+  default:
+    OrbitDemo0();
+    break;
+  }  
+}
+
 char CheckSwitches() {
 
   long 	switch1;
@@ -331,7 +244,7 @@ void OrbitDemo0() { // does simple arithmetic calculations, reads operands and o
     }
     for (int i = (counter); i >= 0; i--){ // reads number digit by digit
       if ((int)temp[counter-i] == 48){
-        num1 += (int)pow(10, i)*0; 
+        num1 += (int)pow(10, i)*0;
       }
       else if ((int)temp[counter-i] == 49){
         num1 += (int)pow(10, i)*1;
@@ -497,6 +410,64 @@ void OrbitDemo0() { // does simple arithmetic calculations, reads operands and o
   }
 }
 
+void flash(int start){
+  // turn one of the four LEDs on
+  if (start == 1){
+    GPIOPinWrite(LED1Port, LED1, LED1);
+  }
+  else if (start == 2){
+    GPIOPinWrite(LED2Port, LED2, LED2);
+  }
+  else if (start == 3){ 
+    GPIOPinWrite(LED3Port, LED3, LED3);
+  }
+  else if (start == 4){
+    GPIOPinWrite(LED4Port, LED4, LED4);
+  }
+}
+
+void off (){
+  // turn off all LEDs
+  GPIOPinWrite(LED1Port, LED1, LOW);
+  GPIOPinWrite(LED2Port, LED2, LOW);
+  GPIOPinWrite(LED3Port, LED3, LOW);
+  GPIOPinWrite(LED4Port, LED4, LOW);
+}
+
+int getStart(){
+  // decide which LED to flash by checking the state of the two buttons
+  uint32_t	ulAIN0;
+  long 			lBtn1;
+  long 			lBtn2;
+  char			szAIN[6] = {0};
+  char			cMSB = 0x00;
+  char			cMIDB = 0x00;
+  char			cLSB = 0x00;
+  
+  ADCProcessorTrigger(ADC0_BASE, 0);
+  ADCSequenceDataGet(ADC0_BASE, 0, &ulAIN0);
+
+  cMSB = (0xF00 & ulAIN0) >> 8;
+  cMIDB = (0x0F0 & ulAIN0) >> 4;
+  cLSB = (0x00F & ulAIN0);
+
+  szAIN[0] = '0';
+  szAIN[1] = 'x';
+  szAIN[2] = (cMSB > 9) ? 'A' + (cMSB - 10) : '0' + cMSB;
+  szAIN[3] = (cMIDB > 9) ? 'A' + (cMIDB - 10) : '0' + cMIDB;
+  szAIN[4] = (cLSB > 9) ? 'A' + (cLSB - 10) : '0' + cLSB;
+  szAIN[5] = '\0';
+  
+  if ((int)szAIN[2] <= 52 && (int)szAIN[2] > 48){
+  return 1;}
+  if ((int)szAIN[2] <= 56 && (int)szAIN[2] > 52) {
+  return 2;}
+  if ((int)szAIN[2] <= 66 && (int)szAIN[2] > 56){
+  return 3;}
+  if ((int)szAIN[2] <= 70 && (int)szAIN[2] > 66){
+  return 4;}
+}
+
 void OrbitDemo1(){ // reads character from UART again, prints character in morse code to one of the four LEDs (change LED by pressing the buttons)
   OrbitOledClear();
   OrbitOledMoveTo(0,0);
@@ -563,7 +534,7 @@ void OrbitDemo1(){ // reads character from UART again, prints character in morse
           h();
         }
         else if ((int)temp[i] == 105 || (int)temp[i] == 73){
-          i();
+          i2();
         }
         else if ((int)temp[i] == 106 || (int)temp[i] == 74){
           j();
@@ -766,6 +737,16 @@ void tileMove(int x,int y){
   OrbitOledUpdate();
 }
 
+int collisiondetection(int size, tile blocks[], int player_x,int player_y,int dx,int dy){ //dx, dy= falling speed, player_x,y = position of the player
+  for(int i=0; i<size; i++){
+    if(player_x+dx==blocks[i].x+blocks[i].w && ((player_y+16>=blocks[i].y && player_y+16<=blocks[i].y+blocks[i].h)
+      ||(player_y<=blocks[i].y+blocks[i].h && player_y>=blocks[i].y)||(player_y<=blocks[i].y && player_y+16>=blocks[i].y+blocks[i].h))){
+      return -1; //will collide
+    }
+  }
+  return 0; //will not collide 
+}
+
 char I2CGenTransmit(char * pbData, int cSize, bool fRW, char bAddr) { // using I2C to communicate with accelerometer
   int i;
   char *pbTemp;
@@ -826,6 +807,25 @@ char I2CGenTransmit(char * pbData, int cSize, bool fRW, char bAddr) { // using I
     }
   }
   return 0x00;
+}
+
+unsigned int rando() {
+  return rand_interval(0, 16);
+}
+
+unsigned int rand_interval(unsigned int min, unsigned int max){
+  int r;
+  const unsigned int range = 1 + max - min;
+  const unsigned int buckets = RAND_MAX / range;
+  const unsigned int limit = buckets * range;
+  do {
+    r = rand();
+  } while (r >= limit);
+  return min + (r / buckets);
+}
+
+bool I2CGenIsNotIdle() {
+  return !I2CMasterBusBusy(I2C0_BASE);
 }
  
 void OrbitDemo3() {
@@ -967,7 +967,7 @@ void h(){
   off();
 }
 
-void i(){
+void i2(){
   getStart(); 
   flash(getStart());
   delay(500);
